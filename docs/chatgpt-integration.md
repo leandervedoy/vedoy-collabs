@@ -8,15 +8,15 @@
   3. Shopify product campaign briefs using verified product records from the user's connected store.
   4. Personalized outreach message drafts for public creators.
 - AI returns structured JSON proposals. Nothing is sent, published, or written automatically.
-- Private read-only MCP-compatible endpoint at `POST /api/mcp` with `initialize`, `tools/list`, `tools/call` and `ping`. Tools: `find_creators`, `find_creator_campaigns`, `get_public_media_kit`.
+- Read-only MCP-compatible endpoint at `POST /mcp`. Tools: `search_creators`, `find_creator_campaigns`, and `get_creator_media_kit`. Only explicitly published Media Kits and publicly open campaigns are visible.
 
 ## Integration safety
 - All AI tasks require a valid Supabase user JWT. Shopify product reads are scoped to that user's connected shop.
 - OpenAI credentials remain server-only. `store:false` is supplied to the Responses API. Do not pass private customer details or secrets in prompts.
 - AI is explicitly disabled by default with `COLLABS_AI_ENABLED=false`.
 - Results are displayed as drafts with no automatic actions; creator match IDs are constrained to actual candidates.
-- The MCP endpoint requires a separate long bearer secret. The bridge only returns published/opt-in information, and provides no write tools.
-- **The static bearer bridge is a private integration prototype, not a production ChatGPT OAuth connector.** Before allowing third parties or public ChatGPT distribution, implement OAuth 2.1 authorization code + PKCE, protected resource metadata, per-user consent/scopes, quota controls, telemetry and hardened error handling.
+- The public MCP endpoint is disabled by default via `COLLABS_PUBLIC_MCP_ENABLED`. It has no write tools. Implement durable request rate-limiting and abuse controls before enabling.
+- **This is a read-only MCP prototype, not a production ChatGPT OAuth connector.** Before allowing third parties or public ChatGPT distribution, implement OAuth 2.1 authorization code + PKCE, protected resource metadata, per-user consent/scopes, quota controls, telemetry and hardened error handling.
 - Production needs a durable per-user rate limiter and API spending cap; the present request path is intended for trusted limited testing only.
 
 ## Deployment configuration
