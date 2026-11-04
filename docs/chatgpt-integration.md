@@ -8,7 +8,7 @@
   3. Shopify product campaign briefs using verified product records from the user's connected store.
   4. Personalized outreach message drafts for public creators.
 - AI returns structured JSON proposals. Nothing is sent, published, or written automatically.
-- Read-only MCP-compatible endpoint at `POST /mcp`. Tools: `search_creators`, `find_creator_campaigns`, and `get_creator_media_kit`. Only explicitly published Media Kits and publicly open campaigns are visible.
+- Read-only MCP-compatible endpoint at `POST /mcp`. Tools: `search_creators` and `get_creator_media_kit`. Only explicitly published Media Kits whose source profiles are public are visible.
 
 ## Integration safety
 - All AI tasks require a valid Supabase user JWT. Shopify product reads are scoped to that user's connected shop.
@@ -23,7 +23,7 @@
 See `.env.example`. You will need an OpenAI project API key, valid supported Responses model ID, Supabase service key, and working base app environment variables.
 
 ## Prerequisites/blockers
-- The Media Kit / Shopify migrations on the parent branch were not deployed; the live Supabase schema lacks `collabs_media_kits` and campaign tables. Do not enable these modules until migrations are reviewed, applied and verified.
+- The Media Kit / Shopify migrations on the parent branch were not deployed; the last inspection found the live Supabase schema lacked `collabs_media_kits` and campaign tables. Do not enable these modules until migrations are reviewed, applied and verified.
 - Shopify OAuth callback requires valid app credentials, approved redirect URI and secure hosted URL.
 - No Vercel deployment or ChatGPT app publication was completed.
 - Repository end-to-end build, integration/auth tests, privacy review and UX QA are outstanding.
@@ -32,7 +32,7 @@ See `.env.example`. You will need an OpenAI project API key, valid supported Res
 ## First test plan
 1. Verify preview build/typecheck.
 2. In test Supabase, create two opted-in public Collabs creator profiles and one private profile; verify the public/private visibility boundary.
-3. Call MCP with and without bearer token; verify unauthorized requests fail, and public tools cannot mutate data.
+3. Call MCP without login and verify it only exposes explicitly published Media Kits; private/unpublished profiles must never appear, and there must be no write tools.
 4. Test media kit and outreach suggestions with a low-value test user, checking unsupported claims are not invented.
 5. With a test Shopify shop, generate a campaign brief; confirm no products/prices are modified.
 6. Enable rate limits, audit logs and OAuth before any public distribution.
