@@ -1,15 +1,14 @@
 "use client";
 import { useEffect,useMemo,useState } from "react";
-import { useSearchParams } from "next/navigation";
 import {getDb} from "@/lib/supabase";
 import type {Session} from "@supabase/supabase-js";
 import "../../media-kit/media.css";
 type Application={id:string;creator_id:string;pitch:string;status:string;created_at:string};
 export default function Applicants(){
- const db=useMemo(()=>getDb(),[]),params=useSearchParams(),campaign=params.get("campaign")||"";
+ const db=useMemo(()=>getDb(),[]);const [campaign,setCampaign]=useState("");
  const [session,setSession]=useState<Session|null>(null),[items,setItems]=useState<Application[]>([]);
  const [error,setError]=useState(""),[busy,setBusy]=useState(false),[ready,setReady]=useState(false);
- useEffect(()=>{if(!db){setReady(true);return;}db.auth.getSession().then(({data})=>{setSession(data.session);setReady(true);});const {data:{subscription}}=db.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>subscription.unsubscribe();},[db]);
+ useEffect(()=>{setCampaign(new URLSearchParams(window.location.search).get("campaign")||"");if(!db){setReady(true);return;}db.auth.getSession().then(({data})=>{setSession(data.session);setReady(true);});const {data:{subscription}}=db.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>subscription.unsubscribe();},[db]);
  async function request(method:"GET"|"PATCH",payload?:Record<string,string>){
   if(!db)throw new Error("Supabase mangler.");
   const {data:{session:s}}=await db.auth.getSession();
