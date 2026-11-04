@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { admin, encrypt, tokenGrant, validateShop, verifyShopifyHmac, verifyState } from "@/lib/shopify";
 export const runtime="nodejs";
 export async function GET(req:NextRequest){
-  const base=process.env.COLLABS_PUBLIC_URL || req.nextUrl.origin;
+  const base=process.env.COLLABS_PUBLIC_URL || "https://invalid.example";
   const destination=new URL("/shopify",base);
   try{
+    if(!process.env.COLLABS_PUBLIC_URL || !process.env.COLLABS_PUBLIC_URL.startsWith("https://")) throw new Error("COLLABS_PUBLIC_URL er ikke satt til en sikker adresse.");
     const params=req.nextUrl.searchParams;
     if(!verifyShopifyHmac(params))throw new Error("Shopify-signaturen ble avvist.");
     const state=verifyState(params.get("state")||"");
