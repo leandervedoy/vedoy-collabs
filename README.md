@@ -1,28 +1,55 @@
-# Vedoy Collabs
+# Vedoy Collabs — Creator Discovery MVP
 
-Professional collaboration, jobs and creator marketplace.
+Vedoy Collabs is a Next.js 14 + React + TypeScript application backed by the **existing Vedoy Supabase** project. The app lives on the `feature/professional-foundation` branch while it is reviewed.
 
-## Product areas
-- Discover: posts, projects, creators and job opportunities, with search and saved filters.
-- Profile: portfolio, education, skills, work experience, verified links, visibility controls.
-- Work: listings, applications, status tracking, team invitations and project workspaces.
-- Messaging: conversations, abuse reporting, blocking and notification preferences.
-- Business: organization accounts, hiring roles, candidate management and Growth Sales assignments.
-- Trust: verification status, moderation queue, account recovery, privacy export and deletion.
-- Monetization: optional subscription, time-limited boosts and transparent receipts.
+## Implemented UI
+- Email/password registration and login with Supabase Auth.
+- Responsive creator directory with text, role, skill and location search.
+- Creator profiles: biography, interests, skills, portfolio URLs, social links, availability and image URLs.
+- Public/private profile toggle; private profile fields are not returned in discovery.
+- Save and unsave creators; separate saved-creators view.
+- Private contact requests with a personal note, recipient approval/decline and a 20-per-24-hour database limit.
+- On acceptance, an existing Collabs match is created; conversation uses existing `collabs_messages` table.
+- Messages and optional Realtime channel updates.
+- Project listings, search and applications with existing Collabs tables.
+- Report and block creators; block prevents contact and new messages.
 
-## Architecture
-Next.js App Router, TypeScript, Supabase Auth/Postgres/Storage with strict RLS, Stripe server-side checkout and webhooks, responsive mobile-first interface.
+The discovery screen deliberately uses **real data only**. There are no fake creators or fabricated engagement statistics.
 
-## Launch priorities
-P0: authentication, profiles, org boundaries, listing/application workflow, private messaging, report/block, accessible UI, security tests.
-P1: discovery ranking, notifications, portfolio, saved searches, Growth integration.
-P2: identity verification, paid boosts, subscriptions, analytics, fraud controls.
+## Database and security
+Connected to the existing project `niedmgyyougvgiiuwcvw`. On Nov 4, 2026, migration `collabs_creator_discovery_contact_20261104` was applied to that project:
+- New tables: `collabs_blocks`, `collabs_saved_creators`, `collabs_contact_requests`, `collabs_creator_reports`.
+- RLS owner-only policies for blocks, saved profiles and reports; participant-only policies for requests.
+- SQL RPC `collabs_find_creators` returns only an explicit whitelist of publicly shared fields and filters blocked profiles.
+- SQL RPC `collabs_respond_to_contact` atomically accepts/declines requests and creates a match.
+- Restrictive messaging policy prevents new messages across blocks.
+- Authenticated-only grants on sensitive RPCs.
 
-## Release requirements
-No direct client writes to financial or verification status; verify webhooks; rate-limit sensitive endpoints; store audit events; paginate feeds; test tenant isolation and IDOR; monitor errors and latency; add backups and retention policies; verify consent and lawful basis for recruiting data.
+Never set service-role/secret keys in the frontend. Do not use user metadata to determine admin access.
 
-## Existing integration strategy
-Growth remains source of truth for its existing booking, team and business data. Collabs publishes opportunities and exchanges scoped identifiers through authenticated server APIs. Do not duplicate service catalog or prices. Sellers can access Sales assignments only after training and admin approval.
+## Local development
+Copy `.env.example` into `.env.local`, then supply the Supabase **publishable** API key from your project. Do not commit the key file.
 
-Status: specification committed, implementation not yet completed.
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. Before rollout, run `npm run typecheck` and `npm run build`.
+
+## Deployment status
+**Not deployed.** Vercel returned HTTP 403 (no permission to create a project in Vedoy team). A Vercel preview needs an authorized connection and these two environment variables:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+Only approved production tests should expose this app to the public.
+
+## Additional release gates
+- Verify a two-account flow: signup, public creator discovery, request, accept, message, block, report.
+- Set up spam protection/CAPTCHA, email notifications, accessibility and load tests.
+- Build moderation review screen, image uploads with storage RLS, business/organization accounts, profiles with rich education and experience fields, and payments.
+- Define privacy, retention, deletion, handling of job applicants and Norwegian marketing rules.
+- Connect Vedoy Growth service catalog via an authenticated backend API rather than copying customer records.
+- Add monitoring, backup recovery runbooks and CI release checks.
+
+This is a functional **implementation foundation**, not a verified production release.
