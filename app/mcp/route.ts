@@ -7,6 +7,7 @@ type Payload={jsonrpc?:string;id?:number|string|null;method?:string;params?:{nam
 const protocol="2025-06-18";
 const tools=[
  {name:"search_creators",description:"Find creators who explicitly published a public Vedoy Collabs Media Kit. Read-only. Provides portfolio excerpts, roles, skills and links, never private contact details.",inputSchema:{type:"object",properties:{query:{type:"string",description:"Name, skill, industry or location to search"},limit:{type:"integer",minimum:1,maximum:12}},required:["query"]},annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false}},
+ {name:"find_creator_campaigns",description:"Find public open campaigns for creators by product, brand or brief. Read-only.",inputSchema:{type:"object",properties:{query:{type:"string"},limit:{type:"integer",minimum:1,maximum:12}},additionalProperties:false},annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false}},
  {name:"get_creator_media_kit",description:"Read a public and published Creator Media Kit by its public slug. Read-only.",inputSchema:{type:"object",properties:{slug:{type:"string"}},required:["slug"]},annotations:{readOnlyHint:true,destructiveHint:false,openWorldHint:false}}
 ];
 function answer(id:string|number|null|undefined,result:unknown){return Response.json({jsonrpc:"2.0",id:id??null,result},{headers:{"Cache-Control":"no-store"}});}
@@ -68,6 +69,15 @@ export async function POST(req:NextRequest){
    const limit=Math.max(1,Math.min(12,Number(args.limit)||8));
    const creators=await safePublishedCreators(query,limit);
    return answer(input.id,{content:[{type:"text",text:JSON.stringify({creators,count:creators.length})}],isError:false});
+  }
+  if(name==="find_creator_campaigns"){
+   const q=limited(args.query,100).toLowerCase();
+   const max=Math.max(1,Math.min(12,Number(args.limit)||8));
+   const db=admin();
+   const {data,error}=await db.from("collabs_product_campaigns").select("id,product_title,brief,deliverables,budget_nok,shop_domain,created_at").eq("status","open").order("created_at",{ascending:false}).limit(100);
+   if(error)throw error;
+   const campaigns=(data||[]).filter(c=>[c.product_title,c.brief,c.shop_domain].join(" ").toLowerCase().includes(q)).slice(0,max);
+   return answer(input.id,{content:[{type:"text",text:JSON.stringify({campaigns,count:campaigns.length})}],isError:false});
   }
   if(name==="get_creator_media_kit"){
    const kit=await kitBySlug(limited(args.slug,50));
