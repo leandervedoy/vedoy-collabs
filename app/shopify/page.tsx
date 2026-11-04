@@ -63,7 +63,7 @@ export default function ShopifyCampaigns(){
       <label>Budsjett (NOK)<input required type="number" min="0" max="10000000" step="1" value={budget} onChange={e=>setBudget(e.target.value)}/></label>
       <label className="toggle"><input type="checkbox" checked={publish} onChange={e=>setPublish(e.target.checked)}/>Vis kampanjen for skapere nå</label><button className="primary" disabled={loading}>Opprett kampanje</button></form>}
    </>}
-   <div className="campaign-items"><h2>Mine kampanjer</h2>{campaigns.length===0&&<p className="subtle">Ingen kampanjer er opprettet.</p>}{campaigns.map(c=><article className="campaign-card" key={c.id}><small>{c.status==="open"?"Publisert":c.status==="draft"?"Utkast":"Avsluttet"} · {c.shop_domain}</small><strong>{c.product_title}</strong><p>{c.brief.slice(0,180)}</p><small>Budsjett: {c.budget_nok.toLocaleString("nb-NO")} kr</small></article>)}</div>
+   <div className="campaign-items"><h2>Mine kampanjer</h2>{campaigns.length===0&&<p className="subtle">Ingen kampanjer er opprettet.</p>}{campaigns.map(c=><article className="campaign-card" key={c.id}><small>{c.status==="open"?"Publisert":c.status==="draft"?"Utkast":"Avsluttet"} · {c.shop_domain}</small><strong>{c.product_title}</strong><p>{c.brief.slice(0,180)}</p><small>Budsjett: {c.budget_nok.toLocaleString("nb-NO")} kr</small><div style={{marginTop:12}}><a className="secondary" href={"/shopify/applicants?campaign="+encodeURIComponent(c.id)}>Se søknader →</a></div></article>)}</div>
   </section></div>
  </main>;
 }
