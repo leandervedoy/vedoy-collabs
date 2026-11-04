@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { getDb } from "@/lib/supabase";
+import { getDb } from "@/lib/supabase";\nimport "./media.css";
 import type { User } from "@supabase/supabase-js";
 type Network={name:string;handle:string;followers:string;url:string};
 type Package={name:string;price:string;description:string};
